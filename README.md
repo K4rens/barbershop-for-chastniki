@@ -1,73 +1,92 @@
-# React + TypeScript + Vite
+# Barber CRM
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+&gt; Полнофункциональная CRM-система для барбершопов с онлайн-записью и админ-панелью.  
+&gt; **Реальный коммерческий проект, задеплоенный на VPS и работающий в продакшене.**
 
-Currently, two official plugins are available:
+🔗 **Live Demo:** [http://132.243.16.248/](http://132.243.16.248/)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## ✅ Что реализовано (всё работает в проде)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Клиентская часть
+- 📅 **Онлайн-запись** — выбор барбера → услуги → дата → время → подтверждение
+- 📱 **Mobile-first UI** — адаптивный интерфейс, большинство клиентов заходят с телефона
+- ⚡ **Слоты в реальном времени** — мгновенная проверка занятости при выборе времени
 
-## Expanding the ESLint configuration
+### Админ-панель (Staff)
+- 📊 **Аналитика** — выручка, загруженность, средний чек, топ услуг, конверсия
+- 📋 **Управление расписанием** — создание рабочих смен, перерывы, блокировка слотов
+- 👥 **CRM по клиентам** — история визитов, контакты, заметки, повторные записи
+- ✂️ **Управление услугами** — цены, длительность, активация/деактивация
+- 🔐 **JWT-аутентификация** — вход по логину/паролю с автоматическим обновлением токенов
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 🏗 Архитектура и стек
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+| Слой | Технологии |
+|------|-----------|
+| **Frontend** | React 19, TypeScript 5.9, Vite 8, React Router 7 |
+| **Server State** | TanStack Query (кэширование, инвалидация, фоновые обновления) |
+| **HTTP Client** | Axios с кастомными interceptors (access/refresh token flow) |
+| **Backend** | Go (REST API) — совместная разработка с бэкенд-разработчиком |
+| **Инфраструктура** | Linux VPS, Nginx, production-сборка |
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 💡 Почему это не "пет-проект для портфолио"
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Production-ready решения
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+**JWT + Refresh Token Queue**  
+Реализована полноценная авторизация с очередью запросов при обновлении токена. Если access-токен истекает во время активной сессии, все "подвешенные" запросы ждут refresh и выполняются автоматически — пользователь не теряет данные и не видит ошибок 401.
+
+**Strict TypeScript**  
+Полная типизация API-контрактов. Никаких `any`. Интерфейсы `Barber`, `Booking`, `Slot`, `BarberStats` описывают реальные данные бэкенда.
+
+**TanStack Query**  
+Производственный подход к серверному состоянию: кэширование списков барберов/услуг, инвалидация при мутациях, разделение данных по ключам запросов.
+
+**Модульная архитектура API**  
+Чёткое разделение слоёв:
+- `publicApi` — публичные эндпоинты (барберы, слоты, запись)
+- `authApi` — авторизация/логаут
+- `staffApi` — защищённые эндпоинты админки
+
+**Protected Routes**  
+Разграничение клиентской и административной частей на уровне роутера с редиректами неавторизованных пользователей.
+
+**MSW**  
+Mock Service Worker для разработки UI без поднятого бэкенда (закомментирован в проде, но готов к использованию).
+
+---
+
+## 🚀 Моя роль в проекте
+
+- **Спроектировал и разработал фронтенд** с нуля до продакшена
+- **Спроектировал REST API контракты** совместно с бэкенд-разработчиком (Go)
+- **Настроил production-сборку и деплой** на VPS (Linux + Nginx)
+- **Реализовал полный цикл онлайн-записи** — от UI-календаря до интеграции с бэкендом
+- **Внедрил систему авторизации** с безопасным хранением токенов и автоматическим обновлением
+
+---
+
+## 🛠 Установка и запуск
+
+```bash
+# Клонирование
+git clone https://github.com/K4rens/Barber-CRM.git
+cd Barber-CRM
+
+# Установка зависимостей
+npm install
+
+# Запуск dev-сервера
+npm run dev
+
+# Сборка для продакшена
+npm run build
+
+# Линтинг
+npm run lint
